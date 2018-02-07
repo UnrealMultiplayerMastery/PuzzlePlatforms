@@ -14,13 +14,19 @@ class PUZZLEPLATFORMS_API UPuzzlePlatformsGameInstance : public UGameInstance
 {
 	GENERATED_BODY()
 
+private:
+	TSubclassOf<class UUserWidget> MenuClass;
+
 public:
 	UPuzzlePlatformsGameInstance(const FObjectInitializer & ObjectInitializer);
 	
 	virtual void Init();
 
+	UFUNCTION(BlueprintCallable)
+	void LoadMenu();
+
 	/*
-	Eligible Classes for implementing exec:
+	Eligible Classes for implementing Exec:
 		- Player Controllers
 		- Possessed Pawns
 		- HUDs
@@ -28,10 +34,10 @@ public:
 		- Game Modes
 		- Game Instances
 	*/
-	UFUNCTION(exec)
+	UFUNCTION(Exec)
 	void Host();
 
-	UFUNCTION(exec)
+	UFUNCTION(Exec)
 	void Join(const FString& IpAddress);
 	
 };
