@@ -3,8 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Blueprint/UserWidget.h"
-#include "MenuInterface.h"
+#include "MenuWidget.h"
 
 #include "MainMenu.generated.h"
 
@@ -12,19 +11,12 @@
  * 
  */
 UCLASS()
-class PUZZLEPLATFORMS_API UMainMenu : public UUserWidget
+class PUZZLEPLATFORMS_API UMainMenu : public UMenuWidget
 {
 	GENERATED_BODY()
 
-public:
-	void SetMenuInterface(IMenuInterface* MenuInterface);
-
-	void Setup();
-
 protected:
 	virtual bool Initialize() override;
-
-	virtual void OnLevelRemovedFromWorld(ULevel * InLevel, UWorld * InWorld) override;
 
 private:
 	UPROPERTY(meta = (BindWidget))
@@ -34,7 +26,13 @@ private:
 	class UButton* JoinButtonMain;
 
 	UPROPERTY(meta = (BindWidget))
+	class UButton* QuitButtonMain;
+
+	UPROPERTY(meta = (BindWidget))
 	class UButton* CancelButton;
+
+	UPROPERTY(meta = (BindWidget))
+	class UButton* JoinButton;
 
 	UPROPERTY(meta = (BindWidget))
 	class UWidgetSwitcher* MenuSwitcher;
@@ -45,14 +43,21 @@ private:
 	UPROPERTY(meta = (BindWidget))
 	class UWidget* MainMenu;
 
+	UPROPERTY(meta = (BindWidget))
+	class UEditableTextBox* IpAddressField;
+
 	UFUNCTION()
 	void HostServer();
+
+	UFUNCTION()
+	void JoinServer();
+
+	UFUNCTION()
+	void QuitPressed();
 
 	UFUNCTION()
 	void OpenJoinMenu();
 
 	UFUNCTION()
 	void OpenMainMenu();
-
-	IMenuInterface* MenuInterface;
 };

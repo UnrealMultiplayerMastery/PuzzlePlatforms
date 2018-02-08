@@ -25,6 +25,8 @@ public:
 	// This has an empty implementation, expects the child class to implement
 	virtual void Host() = 0;
 
+	virtual void Join(const FString& IpAddress) = 0;
 
+	virtual void LoadMainMenu() = 0;
 	
 };
