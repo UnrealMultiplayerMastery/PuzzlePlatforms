@@ -3,7 +3,7 @@ Binaries
 DerivedDataCache
 Encrypted
 Intermediate
-Saved
+Saved/*
 .vscode
 .vs
 *.VC.db
@@ -15,4 +15,5 @@ Saved
 *.xcodeproj
 *.xcworkspace
 
+# include screenshots
 !Saved/Screenshots
