@@ -52,6 +52,20 @@ void UPuzzlePlatformsGameInstance::Init()
 		{
 			SessionInterface->OnCreateSessionCompleteDelegates.AddUObject(this, &UPuzzlePlatformsGameInstance::OnCreateSessionComplete);
 			SessionInterface->OnDestroySessionCompleteDelegates.AddUObject(this, &UPuzzlePlatformsGameInstance::OnDestroySessionComplete);
+			SessionInterface->OnFindSessionsCompleteDelegates.AddUObject(this, &UPuzzlePlatformsGameInstance::OnFindSessionsComplete);
+
+			// New: creates something on the heap instead of stack
+			// MakeShareable: takes ordinary cpp pointer and makes it a shared pointer
+			// ToSharedRef: convert shared pointer (can be null) to shared ref (cannot be null) 
+			SessionSearch = MakeShareable(new FOnlineSessionSearch());
+			SessionSearch->bIsLanQuery = true; // local network search only
+			// SessionSearch->QuerySettings.Set(); // when using steam search
+
+			if (SessionSearch.IsValid())
+			{
+				UE_LOG(LogTemp, Warning, TEXT("Finding sessions"))
+				SessionInterface->FindSessions(0, SessionSearch.ToSharedRef());
+			}
 		}
 	}
 	else
@@ -103,6 +117,10 @@ void UPuzzlePlatformsGameInstance::CreateSession()
 	if (SessionInterface.IsValid())
 	{
 		FOnlineSessionSettings SessionSettings;
+		SessionSettings.bIsLANMatch = true;        // search over local network only
+		SessionSettings.NumPublicConnections = 2;  // set num players
+		SessionSettings.bShouldAdvertise = true;   // avoid having to send out an invite
+
 		/*Session gets created asynchronously and a delegate gets sent back: OnCreateSessionCompleteDelegates*/
 		SessionInterface->CreateSession(0, SESSION_NAME, SessionSettings);
 	}
@@ -119,6 +137,18 @@ void UPuzzlePlatformsGameInstance::OnDestroySessionComplete(FName SessionName, b
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Unable to destroy session"))
 		return;
+	}
+}
+
+void UPuzzlePlatformsGameInstance::OnFindSessionsComplete(bool Success)
+{
+	if (Success && SessionSearch.IsValid())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Finding sessions complete"))
+		for (FOnlineSessionSearchResult& SearchResult : SessionSearch->SearchResults)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Session found: %s"), *SearchResult.GetSessionIdStr())
+		}
 	}
 }
 
