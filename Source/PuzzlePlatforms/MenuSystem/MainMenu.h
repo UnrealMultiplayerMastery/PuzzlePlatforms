@@ -14,11 +14,19 @@ UCLASS()
 class PUZZLEPLATFORMS_API UMainMenu : public UMenuWidget
 {
 	GENERATED_BODY()
+public:
+	UMainMenu(const FObjectInitializer & ObjectInitializer);
+
+	void SetServerList(TArray<FString> ServerNames);
+
+	void SelectServerListIndex(uint32 Index);
 
 protected:
 	virtual bool Initialize() override;
 
 private:
+	TSubclassOf<class UUserWidget> ServerRowClass;
+
 	UPROPERTY(meta = (BindWidget))
 	class UButton* HostButtonMain;
 
@@ -46,6 +54,9 @@ private:
 	UPROPERTY(meta = (BindWidget))
 	class UEditableTextBox* IpAddressField;
 
+	UPROPERTY(meta = (BindWidget))
+	class UPanelWidget* ServerList;
+
 	UFUNCTION()
 	void HostServer();
 
@@ -60,4 +71,7 @@ private:
 
 	UFUNCTION()
 	void OpenMainMenu();
+
+	// items can be null, alternative is to use array with negative items
+	TOptional<uint32> SelectedServerListIndex;
 };

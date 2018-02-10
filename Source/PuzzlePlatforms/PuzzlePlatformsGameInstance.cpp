@@ -7,7 +7,6 @@
 #include "UObject/ConstructorHelpers.h"
 #include "Blueprint/UserWidget.h"
 #include "OnlineSessionSettings.h"
-#include "OnlineSessionInterface.h"
 
 #include "PlatformTrigger.h"
 #include "MenuSystem/MainMenu.h"
@@ -53,19 +52,7 @@ void UPuzzlePlatformsGameInstance::Init()
 			SessionInterface->OnCreateSessionCompleteDelegates.AddUObject(this, &UPuzzlePlatformsGameInstance::OnCreateSessionComplete);
 			SessionInterface->OnDestroySessionCompleteDelegates.AddUObject(this, &UPuzzlePlatformsGameInstance::OnDestroySessionComplete);
 			SessionInterface->OnFindSessionsCompleteDelegates.AddUObject(this, &UPuzzlePlatformsGameInstance::OnFindSessionsComplete);
-
-			// New: creates something on the heap instead of stack
-			// MakeShareable: takes ordinary cpp pointer and makes it a shared pointer
-			// ToSharedRef: convert shared pointer (can be null) to shared ref (cannot be null) 
-			SessionSearch = MakeShareable(new FOnlineSessionSearch());
-			SessionSearch->bIsLanQuery = true; // local network search only
-			// SessionSearch->QuerySettings.Set(); // when using steam search
-
-			if (SessionSearch.IsValid())
-			{
-				UE_LOG(LogTemp, Warning, TEXT("Finding sessions"))
-				SessionInterface->FindSessions(0, SessionSearch.ToSharedRef());
-			}
+			SessionInterface->OnJoinSessionCompleteDelegates.AddUObject(this, &UPuzzlePlatformsGameInstance::OnJoinSessionComplete);
 		}
 	}
 	else
@@ -142,13 +129,35 @@ void UPuzzlePlatformsGameInstance::OnDestroySessionComplete(FName SessionName, b
 
 void UPuzzlePlatformsGameInstance::OnFindSessionsComplete(bool Success)
 {
-	if (Success && SessionSearch.IsValid())
+	if (Success && SessionSearch.IsValid() && Menu != nullptr)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Finding sessions complete"))
+
+		TArray<FString> ServerNames;
+
 		for (FOnlineSessionSearchResult& SearchResult : SessionSearch->SearchResults)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Session found: %s"), *SearchResult.GetSessionIdStr())
+			ServerNames.Add(SearchResult.GetSessionIdStr());
 		}
+
+		Menu->SetServerList(ServerNames);
+	}
+}
+
+void UPuzzlePlatformsGameInstance::RefreshServerList()
+{
+	// New: creates something on the heap instead of stack
+	// MakeShareable: takes ordinary cpp pointer and makes it a shared pointer
+	// ToSharedRef: convert shared pointer (can be null) to shared ref (cannot be null) 
+	SessionSearch = MakeShareable(new FOnlineSessionSearch());
+	SessionSearch->bIsLanQuery = true; // local network search only
+	/* SessionSearch->QuerySettings.Set(); // when using steam search */
+
+	if (SessionSearch.IsValid())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Finding sessions"))
+		SessionInterface->FindSessions(0, SessionSearch.ToSharedRef());
 	}
 }
 
@@ -168,11 +177,59 @@ void UPuzzlePlatformsGameInstance::OnCreateSessionComplete(FName SessionName, bo
 	World->ServerTravel("/Game/ThirdPersonCPP/Maps/ThirdPersonExampleMap?listen");
 }
 
+/*
+// IpAddress field manual input
 void UPuzzlePlatformsGameInstance::Join(const FString& IpAddress)
+*/
+
+void UPuzzlePlatformsGameInstance::Join(uint32 Index)
 {
+	if (!SessionInterface.IsValid()) return;
+	if (!SessionSearch.IsValid()) return;
+	
+	/*
+	if (Menu != nullptr)
+	{
+		// Testing
+		Menu->SetServerList({"Test 1", "Test 2"});
+	}
+	*/
+
+	UE_LOG(LogTemp, Warning, TEXT(">>> Joining: %s"), *SessionSearch->SearchResults[Index].GetSessionIdStr())
+	if (!SessionInterface->JoinSession(0, SESSION_NAME, SessionSearch->SearchResults[Index]))
+	{
+		UE_LOG(LogTemp, Error, TEXT("Failed to join session"))
+	}
+
+	/*
+	// IpAddress field manual input
+
 	GEngine->AddOnScreenDebugMessage(
-		-1, 5.f, FColor::Green,
-		FString::Printf(TEXT("Joining: %s"), *IpAddress)
+	-1, 5.f, FColor::Green,
+	FString::Printf(TEXT("Joining: %s"), *IpAddress)
+	);
+
+	APlayerController* PlayerController = GetFirstLocalPlayerController();
+	if (!ensure(PlayerController != nullptr)) return;
+
+	PlayerController->ClientTravel(IpAddress, ETravelType::TRAVEL_Absolute);
+	*/
+}
+
+void UPuzzlePlatformsGameInstance::OnJoinSessionComplete(FName SessionName, EOnJoinSessionCompleteResult::Type Result)
+{
+	if (!SessionInterface.IsValid()) return;
+
+	FString IpAddress;
+	if (!SessionInterface->GetResolvedConnectString(SessionName, IpAddress))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Could not get connect string"))
+		return;
+	}
+
+	GEngine->AddOnScreenDebugMessage(
+	-1, 5.f, FColor::Green,
+	FString::Printf(TEXT("Joining: %s"), *IpAddress)
 	);
 
 	APlayerController* PlayerController = GetFirstLocalPlayerController();
