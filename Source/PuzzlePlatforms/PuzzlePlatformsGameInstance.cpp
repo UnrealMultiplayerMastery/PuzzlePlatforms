@@ -104,13 +104,30 @@ void UPuzzlePlatformsGameInstance::CreateSession()
 	if (SessionInterface.IsValid())
 	{
 		FOnlineSessionSettings SessionSettings;
-		SessionSettings.bIsLANMatch = true;        // search over local network only
+		SessionSettings.bIsLANMatch = false;       // search over local network only
 		SessionSettings.NumPublicConnections = 2;  // set num players
 		SessionSettings.bShouldAdvertise = true;   // avoid having to send out an invite
+		SessionSettings.bUsesPresence = true;      // create lobby session, essentially enables a LAN match when bIsLANMatch (used in NULL OSS is not being used)
 
 		/*Session gets created asynchronously and a delegate gets sent back: OnCreateSessionCompleteDelegates*/
 		SessionInterface->CreateSession(0, SESSION_NAME, SessionSettings);
 	}
+}
+
+void UPuzzlePlatformsGameInstance::OnCreateSessionComplete(FName SessionName, bool Success)
+{
+	if (!Success)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Unable to create session"))
+			return;
+	}
+
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("Hosting game"));
+
+	UWorld* World = GetWorld();
+	if (!ensure(World != nullptr)) return;
+
+	World->ServerTravel("/Game/ThirdPersonCPP/Maps/ThirdPersonExampleMap?listen");
 }
 
 void UPuzzlePlatformsGameInstance::OnDestroySessionComplete(FName SessionName, bool Success)
@@ -127,32 +144,18 @@ void UPuzzlePlatformsGameInstance::OnDestroySessionComplete(FName SessionName, b
 	}
 }
 
-void UPuzzlePlatformsGameInstance::OnFindSessionsComplete(bool Success)
-{
-	if (Success && SessionSearch.IsValid() && Menu != nullptr)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Finding sessions complete"))
-
-		TArray<FString> ServerNames;
-
-		for (FOnlineSessionSearchResult& SearchResult : SessionSearch->SearchResults)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Session found: %s"), *SearchResult.GetSessionIdStr())
-			ServerNames.Add(SearchResult.GetSessionIdStr());
-		}
-
-		Menu->SetServerList(ServerNames);
-	}
-}
-
 void UPuzzlePlatformsGameInstance::RefreshServerList()
 {
 	// New: creates something on the heap instead of stack
 	// MakeShareable: takes ordinary cpp pointer and makes it a shared pointer
 	// ToSharedRef: convert shared pointer (can be null) to shared ref (cannot be null) 
 	SessionSearch = MakeShareable(new FOnlineSessionSearch());
-	SessionSearch->bIsLanQuery = true; // local network search only
-	/* SessionSearch->QuerySettings.Set(); // when using steam search */
+	// local network search only
+	// SessionSearch->bIsLanQuery = true;
+	// When using steam search, QuerySettings pointer does not have a method for presence
+	SessionSearch->QuerySettings.Set(SEARCH_PRESENCE, true, EOnlineComparisonOp::Equals);
+	// Need to search for enough session for our game to get found
+	SessionSearch->MaxSearchResults = 100;
 
 	if (SessionSearch.IsValid())
 	{
@@ -161,20 +164,22 @@ void UPuzzlePlatformsGameInstance::RefreshServerList()
 	}
 }
 
-void UPuzzlePlatformsGameInstance::OnCreateSessionComplete(FName SessionName, bool Success)
+void UPuzzlePlatformsGameInstance::OnFindSessionsComplete(bool Success)
 {
-	if (!Success)
+	if (Success && SessionSearch.IsValid() && Menu != nullptr)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Unable to create session"))
-		return;
+		UE_LOG(LogTemp, Warning, TEXT("Finding sessions complete"))
+
+			TArray<FString> ServerNames;
+
+		for (FOnlineSessionSearchResult& SearchResult : SessionSearch->SearchResults)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Session found: %s"), *SearchResult.GetSessionIdStr())
+				ServerNames.Add(SearchResult.GetSessionIdStr());
+		}
+
+		Menu->SetServerList(ServerNames);
 	}
-
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("Hosting game"));
-
-	UWorld* World = GetWorld();
-	if (!ensure(World != nullptr)) return;
-
-	World->ServerTravel("/Game/ThirdPersonCPP/Maps/ThirdPersonExampleMap?listen");
 }
 
 /*
