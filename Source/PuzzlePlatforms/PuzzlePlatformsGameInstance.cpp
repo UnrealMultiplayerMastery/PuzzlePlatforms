@@ -107,7 +107,7 @@ void UPuzzlePlatformsGameInstance::CreateSession()
 		SessionSettings.bIsLANMatch = false;       // search over local network only
 		SessionSettings.NumPublicConnections = 2;  // set num players
 		SessionSettings.bShouldAdvertise = true;   // avoid having to send out an invite
-		SessionSettings.bUsesPresence = true;      // create lobby session, essentially enables a LAN match when bIsLANMatch (used in NULL OSS is not being used)
+		SessionSettings.bUsesPresence = true;      // tell steam to use lobbies
 
 		/*Session gets created asynchronously and a delegate gets sent back: OnCreateSessionCompleteDelegates*/
 		SessionInterface->CreateSession(0, SESSION_NAME, SessionSettings);

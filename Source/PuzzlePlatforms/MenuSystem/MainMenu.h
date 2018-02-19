@@ -73,5 +73,6 @@ private:
 	void OpenMainMenu();
 
 	// items can be null, alternative is to use array with negative items
+	// Store data as a member variable, TSharedPtr stores data elsewhere but pointed to
 	TOptional<uint32> SelectedServerListIndex;
 };
