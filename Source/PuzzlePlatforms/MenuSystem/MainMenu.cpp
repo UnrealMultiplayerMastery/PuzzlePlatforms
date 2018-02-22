@@ -75,6 +75,21 @@ void UMainMenu::SetServerList(TArray<FString> ServerNames)
 void UMainMenu::SelectServerListIndex(uint32 Index)
 {
 	SelectedServerListIndex = Index;
+	UpdateChildren();
+}
+
+void UMainMenu::UpdateChildren()
+{
+	for (int32 i = 0; i < ServerList->GetChildrenCount(); ++i)
+	{
+		auto * Row = Cast<UServerRow>(ServerList->GetChildAt(i));
+		// Always need to check for null after doing a cast
+		if (Row != nullptr)
+		{
+			// Interesting thing about && is that it is a short-circuit operator
+			Row->Selected = (SelectedServerListIndex.IsSet() && SelectedServerListIndex.GetValue() == i);
+		}
+	}
 }
 
 void UMainMenu::JoinServer()
