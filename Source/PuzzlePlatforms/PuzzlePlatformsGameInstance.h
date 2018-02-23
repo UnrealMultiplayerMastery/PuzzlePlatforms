@@ -39,7 +39,7 @@ public:
 		- Game Instances
 	*/
 	UFUNCTION(Exec)
-	void Host() override;
+	void Host(FString ServerName) override;
 	/*
 	// IpAddress field manual input
 	UFUNCTION(Exec)
@@ -72,4 +72,6 @@ private:
 	void OnJoinSessionComplete(FName SessionName, EOnJoinSessionCompleteResult::Type Result);
 
 	void CreateSession();
+
+	FString DesiredServerName;
 };

@@ -17,7 +17,13 @@ class PUZZLEPLATFORMS_API UServerRow : public UUserWidget
 public:
 	UPROPERTY(meta = (BindWidget))
 	class UTextBlock* ServerName;
-	
+
+	UPROPERTY(meta = (BindWidget))
+	class UTextBlock* HostUsername;
+
+	UPROPERTY(meta = (BindWidget))
+	class UTextBlock* NumConnections;
+
 	// State resides in MainMenu SelectedIndex
 	UPROPERTY(BlueprintReadOnly)
 	bool Selected = false;

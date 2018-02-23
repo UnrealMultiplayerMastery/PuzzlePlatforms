@@ -24,13 +24,19 @@ bool UMainMenu::Initialize()
 	if (!Success) return false;
 
 	if (!ensure(HostButtonMain != nullptr)) return false;
-	HostButtonMain->OnReleased.AddDynamic(this, &UMainMenu::HostServer);
+	HostButtonMain->OnReleased.AddDynamic(this, &UMainMenu::OpenHostMenu);
+
+	if (!ensure(HostCreateButton != nullptr)) return false;
+	HostCreateButton->OnReleased.AddDynamic(this, &UMainMenu::HostServer);
 
 	if (!ensure(JoinButtonMain != nullptr)) return false;
 	JoinButtonMain->OnReleased.AddDynamic(this, &UMainMenu::OpenJoinMenu);
 
 	if (!ensure(QuitButtonMain != nullptr)) return false;
 	QuitButtonMain->OnReleased.AddDynamic(this, &UMainMenu::QuitPressed);
+
+	if (!ensure(HostCancelButton != nullptr)) return false;
+	HostCancelButton->OnReleased.AddDynamic(this, &UMainMenu::OpenMainMenu);
 
 	if (!ensure(CancelButton != nullptr)) return false;
 	CancelButton->OnReleased.AddDynamic(this, &UMainMenu::OpenMainMenu);
@@ -44,10 +50,11 @@ bool UMainMenu::Initialize()
 void UMainMenu::HostServer()
 {
 	if (!ensure(MenuInterface != nullptr)) return;
-	MenuInterface->Host();
+	FString ServerNameInput = ServerNameTextBox->Text.ToString();
+	MenuInterface->Host(ServerNameInput);
 }
 
-void UMainMenu::SetServerList(TArray<FString> ServerNames)
+void UMainMenu::SetServerList(TArray<FServerData> ServerData)
 {	
 	if (!ensure(ServerRowClass != nullptr)) return;
 
@@ -59,12 +66,15 @@ void UMainMenu::SetServerList(TArray<FString> ServerNames)
 	uint32 i = 0;
 
 	// FString&: avoid copying
-	for (const FString& ServerName : ServerNames)
+	for (const FServerData& Data : ServerData)
 	{
 		UServerRow* Row = CreateWidget<UServerRow>(World, ServerRowClass);
 		if (!ensure(Row != nullptr)) continue;
 
-		Row->ServerName->SetText(FText::FromString(ServerName));
+		Row->ServerName->SetText(FText::FromString(Data.Name));
+		Row->HostUsername->SetText(FText::FromString(Data.HostUsername));
+		FString ConnectionsText = FString::Printf(TEXT("%d/%d"), Data.CurrentPlayers, Data.MaxPlayers);
+		Row->NumConnections->SetText(FText::FromString(ConnectionsText));
 		Row->Setup(this, i);
 		++i; // pre-increment only slightly more efficient
 
@@ -112,6 +122,11 @@ void UMainMenu::JoinServer()
 	const FString& IpAddress = IpAddressField->GetText().ToString();
 	MenuInterface->Join(IpAddress);
 	*/
+}
+
+void UMainMenu::OpenHostMenu()
+{
+	MenuSwitcher->SetActiveWidget(HostMenu);
 }
 
 void UMainMenu::OpenJoinMenu()

@@ -13,6 +13,7 @@
 #include "MenuSystem/MenuWidget.h"
 
 const static FName SESSION_NAME = TEXT("My Game Session");
+const static FName SERVER_NAME_SETTINGS_KEY = TEXT("ServerName");
 
 
 UPuzzlePlatformsGameInstance::UPuzzlePlatformsGameInstance(const FObjectInitializer & ObjectInitializer)
@@ -83,8 +84,9 @@ void UPuzzlePlatformsGameInstance::LoadInGameMenu()
 	Menu->SetMenuInterface(this);
 }
 
-void UPuzzlePlatformsGameInstance::Host()
+void UPuzzlePlatformsGameInstance::Host(FString ServerName)
 {
+	DesiredServerName = ServerName;
 	if (SessionInterface.IsValid())
 	{
 		auto ExistingSession = SessionInterface->GetNamedSession(SESSION_NAME);
@@ -104,10 +106,21 @@ void UPuzzlePlatformsGameInstance::CreateSession()
 	if (SessionInterface.IsValid())
 	{
 		FOnlineSessionSettings SessionSettings;
-		SessionSettings.bIsLANMatch = false;       // search over local network only
+		if (IOnlineSubsystem::Get()->GetSubsystemName() == "NULL")
+		{
+			SessionSettings.bIsLANMatch = true;       // search over local network only
+		}
+		else
+		{
+			SessionSettings.bIsLANMatch = false;
+		}
+
 		SessionSettings.NumPublicConnections = 2;  // set num players
 		SessionSettings.bShouldAdvertise = true;   // avoid having to send out an invite
 		SessionSettings.bUsesPresence = true;      // tell steam to use lobbies
+
+		// Advertise locally and on steam networks
+		SessionSettings.Set(SERVER_NAME_SETTINGS_KEY, DesiredServerName, EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
 
 		/*Session gets created asynchronously and a delegate gets sent back: OnCreateSessionCompleteDelegates*/
 		SessionInterface->CreateSession(0, SESSION_NAME, SessionSettings);
@@ -170,18 +183,31 @@ void UPuzzlePlatformsGameInstance::OnFindSessionsComplete(bool Success)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Finding sessions complete"))
 
-		TArray<FString> ServerNames;
-		ServerNames.Add("Test Server 1");
-		ServerNames.Add("Test Server 2");
-		ServerNames.Add("Test Server 3");
+		TArray<FServerData> ServerData;
 
 		for (FOnlineSessionSearchResult& SearchResult : SessionSearch->SearchResults)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Session found: %s"), *SearchResult.GetSessionIdStr())
-				ServerNames.Add(SearchResult.GetSessionIdStr());
+			FServerData Data;
+			Data.Name = SearchResult.GetSessionIdStr();
+			// NumPublicConnections may not work when testing with NULL subsystem
+			Data.MaxPlayers = SearchResult.Session.SessionSettings.NumPublicConnections;
+			Data.CurrentPlayers = Data.MaxPlayers - SearchResult.Session.NumOpenPublicConnections;
+			Data.HostUsername = SearchResult.Session.OwningUserName;
+			
+			FString ServerName;
+			if (SearchResult.Session.SessionSettings.Get(SERVER_NAME_SETTINGS_KEY, ServerName))
+			{
+				Data.Name = ServerName;
+			}
+			else
+			{
+				Data.Name = "error: no server name";
+			}
+			ServerData.Add(Data);
 		}
 
-		Menu->SetServerList(ServerNames);
+		Menu->SetServerList(ServerData);
 	}
 }
 

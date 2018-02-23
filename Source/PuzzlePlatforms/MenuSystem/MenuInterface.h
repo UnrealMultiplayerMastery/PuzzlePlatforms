@@ -23,7 +23,7 @@ class PUZZLEPLATFORMS_API IMenuInterface
 public:
 	// Pure virtual function
 	// This has an empty implementation, expects the child class to implement
-	virtual void Host() = 0;
+	virtual void Host(FString ServerName) = 0;
 
 	// IpAddress field manual input
 	// virtual void Join(const FString& IpAddress) = 0;
