@@ -16,6 +16,7 @@ const static FName SESSION_NAME = TEXT("GameSession");
 const static FName SERVER_NAME_SETTINGS_KEY = TEXT("ServerName");
 const static int MAX_NUM_PUBLIC_CONNECTIONS = 3;
 
+
 UPuzzlePlatformsGameInstance::UPuzzlePlatformsGameInstance(const FObjectInitializer & ObjectInitializer)
 {
 	/*
@@ -270,6 +271,14 @@ void UPuzzlePlatformsGameInstance::OnJoinSessionComplete(FName SessionName, EOnJ
 	if (!ensure(PlayerController != nullptr)) return;
 
 	PlayerController->ClientTravel(IpAddress, ETravelType::TRAVEL_Absolute);
+}
+
+void UPuzzlePlatformsGameInstance::StartSession()
+{
+	if (SessionInterface.IsValid())
+	{
+		SessionInterface->StartSession(SESSION_NAME);
+	}
 }
 
 void UPuzzlePlatformsGameInstance::LoadMainMenu()

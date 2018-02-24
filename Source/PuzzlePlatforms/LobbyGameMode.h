@@ -22,5 +22,9 @@ public:
 	void Logout(AController* Exiting) override;
 
 private:
+	void StartGame();
+
 	uint32 NumPlayers = 0;
+
+	FTimerHandle GameStartTimer;
 };

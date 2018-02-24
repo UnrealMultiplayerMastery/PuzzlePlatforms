@@ -47,7 +47,11 @@ public:
 	void Join(const FString& IpAddress) override;
 	*/
 
+	UFUNCTION(Exec)
 	void Join(uint32 Index) override;
+
+	UFUNCTION(Exec)
+	void StartSession();
 
 	void LoadMainMenu() override;
 
