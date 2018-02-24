@@ -12,9 +12,9 @@
 #include "MenuSystem/MainMenu.h"
 #include "MenuSystem/MenuWidget.h"
 
-const static FName SESSION_NAME = TEXT("My Game Session");
+const static FName SESSION_NAME = TEXT("GameSession");
 const static FName SERVER_NAME_SETTINGS_KEY = TEXT("ServerName");
-
+const static int MAX_NUM_PUBLIC_CONNECTIONS = 3;
 
 UPuzzlePlatformsGameInstance::UPuzzlePlatformsGameInstance(const FObjectInitializer & ObjectInitializer)
 {
@@ -115,7 +115,7 @@ void UPuzzlePlatformsGameInstance::CreateSession()
 			SessionSettings.bIsLANMatch = false;
 		}
 
-		SessionSettings.NumPublicConnections = 2;  // set num players
+		SessionSettings.NumPublicConnections = MAX_NUM_PUBLIC_CONNECTIONS;  // set num players
 		SessionSettings.bShouldAdvertise = true;   // avoid having to send out an invite
 		SessionSettings.bUsesPresence = true;      // tell steam to use lobbies
 
