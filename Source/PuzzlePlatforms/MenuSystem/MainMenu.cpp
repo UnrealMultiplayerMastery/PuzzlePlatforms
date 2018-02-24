@@ -13,7 +13,7 @@
 
 UMainMenu::UMainMenu(const FObjectInitializer & ObjectInitializer)
 {
-	static ConstructorHelpers::FClassFinder<UUserWidget> ServerRowBPClass(TEXT("/Game/MenuSystem/WBP_ServerRow"));
+	static ConstructorHelpers::FClassFinder<UUserWidget> ServerRowBPClass(TEXT("/Game/MenuSystem/UI/WBP_ServerRow"));
 	if (!ensure(ServerRowBPClass.Class != nullptr)) return;
 	ServerRowClass = ServerRowBPClass.Class;
 }

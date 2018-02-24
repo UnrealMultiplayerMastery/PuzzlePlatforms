@@ -40,6 +40,7 @@ public:
 	*/
 	UFUNCTION(Exec)
 	void Host(FString ServerName) override;
+	
 	/*
 	// IpAddress field manual input
 	UFUNCTION(Exec)
@@ -48,9 +49,9 @@ public:
 
 	void Join(uint32 Index) override;
 
-	virtual void LoadMainMenu() override;
+	void LoadMainMenu() override;
 
-	virtual void RefreshServerList() override;
+	void RefreshServerList() override;
 
 private:
 	TSubclassOf<class UUserWidget> MenuClass;
