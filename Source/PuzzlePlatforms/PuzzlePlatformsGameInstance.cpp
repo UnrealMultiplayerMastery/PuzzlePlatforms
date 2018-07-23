@@ -35,14 +35,14 @@ UPuzzlePlatformsGameInstance::UPuzzlePlatformsGameInstance(const FObjectInitiali
 
 void UPuzzlePlatformsGameInstance::Init()
 {
-	/*
+	
 	// Called at begin play only
 	UE_LOG(LogTemp, Warning, TEXT("GameInstance Init"))
-	*/
+	
 	if (!ensure(MenuClass != nullptr)) return;
 	if (!ensure(InGameMenuClass != nullptr)) return;
 	///UE_LOG(LogTemp, Warning, TEXT("Found class: %s"), *MenuClass->GetName())
-	///UE_LOG(LogTemp, Warning, TEXT("Found class: %s"), *InGameMenuClass->GetName())
+	UE_LOG(LogTemp, Warning, TEXT("Found class: %s"), *InGameMenuClass->GetName())
 
 	IOnlineSubsystem* Subsystem = IOnlineSubsystem::Get();
 	if (Subsystem != nullptr)
