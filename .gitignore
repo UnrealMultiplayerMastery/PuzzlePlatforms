@@ -3,7 +3,9 @@ Binaries
 DerivedDataCache
 Encrypted
 Intermediate
+
 Saved/*
+
 .vscode
 .vs
 *.VC.db
@@ -17,3 +19,4 @@ Saved/*
 
 # include screenshots
 !Saved/Screenshots
+!Saved/Downloads
